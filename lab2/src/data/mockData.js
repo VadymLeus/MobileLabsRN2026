@@ -1,24 +1,27 @@
 // src/data/mockData.js
-export const INITIAL_NEWS = Array.from({ length: 15 }).map((_, i) => ({
-  id: `news-${i}`,
-  title: `Новина #${i + 1}`,
-  description: `Це детальний опис новини #${i + 1}. Тут може бути текст про технології, університет або світ IT.`,
-  image: `https://picsum.photos/seed/${i}/200/200`,
-}));
-
+export const generateNewsItem = () => {
+  const randomNum = Math.floor(Math.random() * 100000);
+  return {
+    id: Math.random().toString(36).substring(2, 11),
+    title: `Новина #${randomNum}`,
+    description: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.`,
+    image: `https://picsum.photos/seed/${randomNum}/200/200`,
+  };
+};
+export const INITIAL_NEWS = Array.from({ length: 15 }).map(generateNewsItem);
 export const CONTACTS_DATA = [
   {
     title: 'Викладачі',
     data: [
-      { id: 'c1', name: 'Іван Іванов', role: 'Лектор' },
-      { id: 'c2', name: 'Петро Петров', role: 'Асистент лектора' },
+      { id: 'c1', name: 'Іван Іванов', role: 'Викладач ЗПІ' },
+      { id: 'c2', name: 'Петро Петров', role: 'Викладач ТВ' },
     ],
   },
   {
     title: 'Одногрупники',
     data: [
-      { id: 'c3', name: 'Олексій Смирнов', role: 'Студент' },
-      { id: 'c4', name: 'Марія Коваленко', role: 'Студентка' },
+      { id: 'c3', name: 'Олексій Олексійович', role: 'Староста' },
+      { id: 'c4', name: 'Марія Батьківна', role: 'Замстарости' },
     ],
   },
 ];

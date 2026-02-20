@@ -1,5 +1,5 @@
 // src/screens/MainScreen.js
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { INITIAL_NEWS } from '../data/mockData';
 
@@ -7,10 +7,21 @@ export default function MainScreen({ navigation }) {
   const [news, setNews] = useState(INITIAL_NEWS);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const flatListRef = useRef(null);
   const handleRefresh = () => {
     setIsRefreshing(true);
     setTimeout(() => {
-      setNews(INITIAL_NEWS);
+      const refreshedItems = Array.from({ length: 15 }).map(() => {
+        const randomNum = Math.floor(Math.random() * 10000);
+        return {
+          id: Math.random().toString(36).substring(2, 11),
+          title: `Новина #${randomNum}`,
+          description: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.`,
+          image: `https://picsum.photos/seed/${randomNum}/200/200`,
+        };
+      });
+      setNews(refreshedItems);
       setIsRefreshing(false);
     }, 1500);
   };
@@ -19,15 +30,31 @@ export default function MainScreen({ navigation }) {
     if (isLoadingMore) return;
     setIsLoadingMore(true);
     setTimeout(() => {
-      const newItems = Array.from({ length: 5 }).map((_, i) => ({
-        id: `news-${news.length + i}`,
-        title: `Новина #${news.length + i + 1} (Завантажено)`,
-        description: `Додатковий опис для підвантаженої новини #${news.length + i + 1}.`,
-        image: `https://picsum.photos/seed/${news.length + i}/200/200`,
-      }));
+      const newItems = Array.from({ length: 5 }).map(() => {
+        const randomNum = Math.floor(Math.random() * 10000);
+        return {
+          id: Math.random().toString(36).substring(2, 11),
+          title: `Новина #${randomNum}`,
+          description: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.`,
+          image: `https://picsum.photos/seed/${randomNum}/200/200`,
+        };
+      });
       setNews([...news, ...newItems]);
       setIsLoadingMore(false);
     }, 1500);
+  };
+
+  const handleScroll = (event) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    if (offsetY > 300) {
+      setShowScrollTop(true);
+    } else {
+      setShowScrollTop(false);
+    }
+  };
+
+  const scrollToTop = () => {
+    flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
   };
 
   const renderItem = ({ item }) => (
@@ -44,25 +71,37 @@ export default function MainScreen({ navigation }) {
   );
 
   return (
-    <FlatList
-      data={news}
-      keyExtractor={(item) => item.id}
-      renderItem={renderItem}
-      initialNumToRender={10}
-      maxToRenderPerBatch={5}
-      windowSize={5}
-      refreshing={isRefreshing}
-      onRefresh={handleRefresh}
-      onEndReached={loadMore}
-      onEndReachedThreshold={0.5}
-      ListHeaderComponent={<Text style={styles.headerText}>Останні новини</Text>}
-      ListFooterComponent={isLoadingMore ? <ActivityIndicator size="large" color="#0000ff" /> : null}
-      ItemSeparatorComponent={() => <View style={styles.separator} />}
-    />
+    <View style={styles.container}>
+      <FlatList
+        ref={flatListRef}
+        data={news}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        initialNumToRender={10}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        refreshing={isRefreshing}
+        onRefresh={handleRefresh}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+        ListHeaderComponent={<Text style={styles.headerText}>Останні новини</Text>}
+        ListFooterComponent={isLoadingMore ? <ActivityIndicator size="large" color="#0000ff" style={styles.loader} /> : null}
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+      />
+
+      {showScrollTop && (
+        <TouchableOpacity style={styles.fab} onPress={scrollToTop}>
+          <Text style={styles.fabIcon}>↑</Text>
+        </TouchableOpacity>
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#f9f9f9' },
   itemContainer: { flexDirection: 'row', padding: 15, backgroundColor: '#fff' },
   image: { width: 60, height: 60, borderRadius: 8, marginRight: 15 },
   textContainer: { flex: 1, justifyContent: 'center' },
@@ -70,4 +109,27 @@ const styles = StyleSheet.create({
   description: { fontSize: 14, color: '#666', marginTop: 4 },
   separator: { height: 1, backgroundColor: '#e0e0e0' },
   headerText: { fontSize: 22, fontWeight: 'bold', margin: 15, textAlign: 'center' },
+  loader: { marginVertical: 20 },
+  
+  fab: {
+    position: 'absolute',
+    width: 50,
+    height: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    right: 20,
+    bottom: 30,
+    backgroundColor: '#007bff',
+    borderRadius: 25,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  fabIcon: {
+    fontSize: 24,
+    color: '#fff',
+    fontWeight: 'bold',
+  }
 });
