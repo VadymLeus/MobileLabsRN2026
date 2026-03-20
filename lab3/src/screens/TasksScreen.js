@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import styled from 'styled-components/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { GameContext } from '../context/GameContext';
 
@@ -17,13 +17,12 @@ export default function TasksScreen() {
     { id: 9, icon: 'arrow-left-right', color: '#FF5722', title: 'Swipe Marathon', desc: 'Perform 20 swipes in any direction', current: stats.swipesLeft + stats.swipesRight, target: 20 },
     { id: 10, icon: 'timer-sand', color: '#8D6E63', title: 'The Patient One', desc: 'Perform 5 long-presses (3s each)', current: stats.longPresses, target: 5 }
   ];
-
   return (
-    <ScrollView style={[styles.container, isDarkMode && styles.containerDark]} contentContainerStyle={styles.scrollContent}>
+    <Container isDarkMode={isDarkMode}>
       {challenges.map((item) => (
         <TaskCard key={item.id} item={item} isDarkMode={isDarkMode} />
       ))}
-    </ScrollView>
+    </Container>
   );
 }
 
@@ -32,133 +31,116 @@ const TaskCard = ({ item, isDarkMode }) => {
   const progressPercent = Math.min((item.current / item.target) * 100, 100);
   const displayCurrent = Math.min(item.current, item.target);
   return (
-    <View style={[styles.card, isDarkMode && styles.cardDark, isCompleted && (isDarkMode ? styles.cardCompletedDark : styles.cardCompleted)]}>
-      <View style={[styles.iconBox, { backgroundColor: `${item.color}15` }]}>
+    <Card isDarkMode={isDarkMode} isCompleted={isCompleted}>
+      <IconBox color={item.color}>
         <MaterialCommunityIcons name={item.icon} size={22} color={item.color} />
-      </View>
-      <View style={styles.textContainer}>
-        <Text style={[styles.title, isDarkMode && styles.textDark]}>{item.title}</Text>
-        <Text style={[styles.desc, isDarkMode && styles.textDarkHint]}>{item.desc}</Text>
-        
-        <View style={styles.progressRow}>
-          <View style={[styles.progressBarBg, isDarkMode && styles.progressBarBgDark]}>
-            <View 
-              style={[
-                styles.progressBarFill, 
-                { width: `${progressPercent}%`, backgroundColor: item.color }
-              ]} 
-            />
-          </View>
-          <Text style={[styles.progressText, isDarkMode && styles.textDarkHint]}>{displayCurrent}/{item.target}</Text>
-        </View>
-      </View>
-      <View style={styles.checkboxContainer}>
+      </IconBox>
+      <TextContainer>
+        <TaskTitle isDarkMode={isDarkMode}>{item.title}</TaskTitle>
+        <TaskDesc isDarkMode={isDarkMode}>{item.desc}</TaskDesc>
+        <ProgressRow>
+          <ProgressBarBg isDarkMode={isDarkMode}>
+            <ProgressBarFill widthPercent={progressPercent} fillColor={item.color} />
+          </ProgressBarBg>
+          <ProgressText isDarkMode={isDarkMode}>{displayCurrent}/{item.target}</ProgressText>
+        </ProgressRow>
+      </TextContainer>
+      <CheckboxContainer>
         {isCompleted ? (
           <MaterialCommunityIcons name="check-circle" size={26} color="#4CAF50" />
         ) : (
           <MaterialCommunityIcons name="circle-outline" size={26} color={isDarkMode ? "#555" : "#CFD8DC"} />
         )}
-      </View>
-
-    </View>
+      </CheckboxContainer>
+    </Card>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F7FA',
-  },
-  containerDark: {
-    backgroundColor: '#121212',
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 40,
-  },
-  card: {
-    flexDirection: 'row',
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 8,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  cardDark: {
-    backgroundColor: '#1E1E1E',
-  },
-  cardCompleted: {
-    backgroundColor: '#F2FCF5', 
-    borderColor: '#E8F5E9',
-  },
-  cardCompletedDark: {
-    backgroundColor: '#1A2E20',
-    borderColor: '#2E4C36',
-  },
-  iconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  textContainer: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
-  },
-  textDark: {
-    color: '#FFFFFF',
-  },
-  desc: {
-    fontSize: 13,
-    color: '#888',
-    marginBottom: 10,
-    lineHeight: 18,
-  },
-  textDarkHint: {
-    color: '#AAAAAA',
-  },
-  progressRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  progressBarBg: {
-    flex: 1,
-    height: 4,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 2,
-    marginRight: 10,
-  },
-  progressBarBgDark: {
-    backgroundColor: '#333333',
-  },
-  progressBarFill: {
-    height: '100%',
-    borderRadius: 2,
-  },
-  progressText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#999',
-    width: 50,
-    textAlign: 'right',
-  },
-  checkboxContainer: {
-    marginLeft: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  }
-});
+const Container = styled.ScrollView.attrs({
+  contentContainerStyle: { padding: 16, paddingBottom: 40 }
+})`
+  flex: 1;
+  background-color: ${(props) => (props.isDarkMode ? '#121212' : '#F5F7FA')};
+`;
+
+const Card = styled.View`
+  flex-direction: row;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  align-items: center;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.03);
+  elevation: 2;
+  border-width: 1px;
+  background-color: ${(props) => {
+    if (props.isCompleted) return props.isDarkMode ? '#1A2E20' : '#F2FCF5';
+    return props.isDarkMode ? '#1E1E1E' : '#FFFFFF';
+  }};
+  
+  border-color: ${(props) => {
+    if (props.isCompleted) return props.isDarkMode ? '#2E4C36' : '#E8F5E9';
+    return 'transparent';
+  }};
+`;
+
+const IconBox = styled.View`
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
+  justify-content: center;
+  align-items: center;
+  margin-right: 16px;
+  background-color: ${(props) => `${props.color}15`};
+`;
+
+const TextContainer = styled.View`
+  flex: 1;
+`;
+
+const TaskTitle = styled.Text`
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: ${(props) => (props.isDarkMode ? '#FFFFFF' : '#333333')};
+`;
+
+const TaskDesc = styled.Text`
+  font-size: 13px;
+  margin-bottom: 10px;
+  line-height: 18px;
+  color: ${(props) => (props.isDarkMode ? '#AAAAAA' : '#888888')};
+`;
+
+const ProgressRow = styled.View`
+  flex-direction: row;
+  align-items: center;
+`;
+
+const ProgressBarBg = styled.View`
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  margin-right: 10px;
+  background-color: ${(props) => (props.isDarkMode ? '#333333' : '#E0E0E0')};
+`;
+
+const ProgressBarFill = styled.View`
+  height: 100%;
+  border-radius: 2px;
+  width: ${(props) => props.widthPercent}%;
+  background-color: ${(props) => props.fillColor};
+`;
+
+const ProgressText = styled.Text`
+  font-size: 11px;
+  font-weight: 600;
+  width: 50px;
+  text-align: right;
+  color: ${(props) => (props.isDarkMode ? '#AAAAAA' : '#999999')};
+`;
+
+const CheckboxContainer = styled.View`
+  margin-left: 10px;
+  justify-content: center;
+  align-items: center;
+`;

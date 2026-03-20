@@ -1,146 +1,211 @@
-import React, { useContext } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Switch } from 'react-native';
+import React, { useContext, useState } from 'react';
+import { Switch, Modal } from 'react-native';
+import styled from 'styled-components/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { GameContext } from '../context/GameContext';
 
 export default function SettingsScreen() {
   const { resetGame, isDarkMode, toggleTheme } = useContext(GameContext);
-  const handleFinalReset = () => {
-    Alert.alert(
-      "Остаточне підтвердження",
-      "Ви абсолютно впевнені? Цю дію НЕМОЖЛИВО скасувати.",
-      [
-        { text: "Ні, я передумав", style: "cancel" },
-        { text: "Так, видалити все", style: "destructive", onPress: resetGame }
-      ]
-    );
+  const [isModalVisible, setModalVisible] = useState(false);
+  const handleConfirmReset = () => {
+    resetGame();
+    setModalVisible(false);
   };
-
-  const handleFirstReset = () => {
-    Alert.alert(
-      "Скидання прогресу",
-      "Ви хочете обнулити всі очки та досягнення?",
-      [
-        { text: "Скасувати", style: "cancel" },
-        { text: "Скинути", style: "destructive", onPress: handleFinalReset }
-      ]
-    );
-  };
-
   return (
-    <View style={[styles.container, isDarkMode && styles.containerDark]}>
-      <Text style={[styles.sectionTitle, isDarkMode && styles.textDarkHint]}>Вигляд</Text>
-      <View style={[styles.settingCard, isDarkMode && styles.cardDark]}>
-        <View style={styles.settingRow}>
-          <View style={styles.settingIconText}>
+    <Container isDarkMode={isDarkMode}>
+      <SectionTitle isDarkMode={isDarkMode}>Вигляд</SectionTitle>
+      <SettingCard isDarkMode={isDarkMode}>
+        <SettingRow>
+          <SettingIconText>
             <MaterialCommunityIcons 
               name={isDarkMode ? "weather-night" : "weather-sunny"} 
               size={24} 
               color={isDarkMode ? "#FFD54F" : "#FFA000"} 
             />
-            <Text style={[styles.settingLabel, isDarkMode && styles.textDark]}>
-              Темна тема
-            </Text>
-          </View>
+            <SettingLabel isDarkMode={isDarkMode}>Темна тема</SettingLabel>
+          </SettingIconText>
           <Switch
             trackColor={{ false: "#767577", true: "#81b0ff" }}
             thumbColor={isDarkMode ? "#00A8FF" : "#f4f3f4"}
             onValueChange={toggleTheme}
             value={isDarkMode}
           />
-        </View>
-      </View>
-
-      <Text style={[styles.sectionTitle, isDarkMode && styles.textDarkHint, { marginTop: 30 }]}>
+        </SettingRow>
+      </SettingCard>
+      <SectionTitle isDarkMode={isDarkMode} style={{ marginTop: 30 }}>
         Управління даними
-      </Text>
-      
-      <TouchableOpacity style={styles.resetButton} onPress={handleFirstReset}>
+      </SectionTitle>
+      <ResetButton onPress={() => setModalVisible(true)}>
         <MaterialCommunityIcons name="delete-restore" size={24} color="white" />
-        <Text style={styles.resetButtonText}>Скинути прогрес</Text>
-      </TouchableOpacity>
-    </View>
+        <ResetButtonText>Скинути прогрес</ResetButtonText>
+      </ResetButton>
+      <Modal
+        transparent={true}
+        visible={isModalVisible}
+        animationType="fade"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <ModalOverlay>
+          <ModalCard isDarkMode={isDarkMode}>
+            <ModalIconCircle>
+              <MaterialCommunityIcons name="alert" size={36} color="#FF5252" />
+            </ModalIconCircle>
+            <ModalTitle isDarkMode={isDarkMode}>Скидання прогресу</ModalTitle>
+            <ModalText isDarkMode={isDarkMode}>
+              Ви впевнені, що хочете обнулити всі очки та досягнення? Цю дію неможливо скасувати.
+            </ModalText>
+            <ModalButtons>
+              <ModalCancelButton isDarkMode={isDarkMode} onPress={() => setModalVisible(false)}>
+                <ModalCancelText isDarkMode={isDarkMode}>Скасувати</ModalCancelText>
+              </ModalCancelButton>
+              <ModalConfirmButton onPress={handleConfirmReset}>
+                <ModalConfirmText>Скинути</ModalConfirmText>
+              </ModalConfirmButton>
+            </ModalButtons>
+          </ModalCard>
+        </ModalOverlay>
+      </Modal>
+    </Container>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F7FA',
-    padding: 20,
-    paddingTop: 30,
-  },
-  containerDark: {
-    backgroundColor: '#121212',
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#888',
-    textTransform: 'uppercase',
-    marginBottom: 10,
-    marginLeft: 5,
-  },
-  settingCard: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  cardDark: {
-    backgroundColor: '#1E1E1E',
-  },
-  settingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  settingIconText: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  settingLabel: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
-    marginLeft: 12,
-  },
-  textDark: {
-    color: '#FFFFFF',
-  },
-  textDarkHint: {
-    color: '#AAAAAA',
-  },
-  resetButton: {
-    flexDirection: 'row',
-    backgroundColor: '#FF5252',
-    paddingVertical: 16,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#FF5252',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  resetButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginLeft: 10,
-    letterSpacing: 0.5,
-  },
-  hintText: {
-    textAlign: 'center',
-    fontSize: 12,
-    color: '#999',
-    marginTop: 15,
-    paddingHorizontal: 10,
-    lineHeight: 18,
-  }
-});
+const Container = styled.View`
+  flex: 1;
+  background-color: ${(props) => (props.isDarkMode ? '#121212' : '#F5F7FA')};
+  padding: 30px 20px 20px 20px;
+`;
+
+const SectionTitle = styled.Text`
+  font-size: 14px;
+  font-weight: 600;
+  color: ${(props) => (props.isDarkMode ? '#AAAAAA' : '#888888')};
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  margin-left: 5px;
+`;
+
+const SettingCard = styled.View`
+  background-color: ${(props) => (props.isDarkMode ? '#1E1E1E' : '#FFFFFF')};
+  border-radius: 16px;
+  padding: 15px;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05);
+  elevation: 2;
+`;
+
+const SettingRow = styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const SettingIconText = styled.View`
+  flex-direction: row;
+  align-items: center;
+`;
+
+const SettingLabel = styled.Text`
+  font-size: 16px;
+  font-weight: 500;
+  color: ${(props) => (props.isDarkMode ? '#FFFFFF' : '#333333')};
+  margin-left: 12px;
+`;
+
+const ResetButton = styled.TouchableOpacity`
+  flex-direction: row;
+  background-color: #FF5252;
+  padding-vertical: 16px;
+  border-radius: 12px;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0px 4px 8px rgba(255, 82, 82, 0.3);
+  elevation: 5;
+`;
+
+const ResetButtonText = styled.Text`
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  margin-left: 10px;
+  letter-spacing: 0.5px;
+`;
+
+const ModalOverlay = styled.View`
+  flex: 1;
+  background-color: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+`;
+
+const ModalCard = styled.View`
+  background-color: ${(props) => (props.isDarkMode ? '#1E1E1E' : '#FFFFFF')};
+  border-radius: 20px;
+  padding: 24px;
+  width: 100%;
+  max-width: 340px;
+  align-items: center;
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+  elevation: 10;
+`;
+
+const ModalIconCircle = styled.View`
+  width: 64px;
+  height: 64px;
+  border-radius: 32px;
+  background-color: #FFEBEE;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
+`;
+
+const ModalTitle = styled.Text`
+  font-size: 20px;
+  font-weight: bold;
+  color: ${(props) => (props.isDarkMode ? '#FFFFFF' : '#333333')};
+  margin-bottom: 8px;
+  text-align: center;
+`;
+
+const ModalText = styled.Text`
+  font-size: 14px;
+  color: ${(props) => (props.isDarkMode ? '#AAAAAA' : '#666666')};
+  text-align: center;
+  margin-bottom: 24px;
+  line-height: 20px;
+`;
+
+const ModalButtons = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+`;
+
+const ModalCancelButton = styled.TouchableOpacity`
+  flex: 1;
+  padding-vertical: 14px;
+  border-radius: 12px;
+  align-items: center;
+  background-color: ${(props) => (props.isDarkMode ? '#333333' : '#F5F5F5')};
+  margin-right: 10px;
+`;
+
+const ModalCancelText = styled.Text`
+  color: ${(props) => (props.isDarkMode ? '#FFFFFF' : '#333333')};
+  font-size: 15px;
+  font-weight: 600;
+`;
+
+const ModalConfirmButton = styled.TouchableOpacity`
+  flex: 1;
+  padding-vertical: 14px;
+  border-radius: 12px;
+  align-items: center;
+  background-color: #FF5252;
+  margin-left: 10px;
+`;
+
+const ModalConfirmText = styled.Text`
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+`;

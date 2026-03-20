@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import { Gesture, GestureDetector, Directions } from 'react-native-gesture-handler';
 import Animated, { 
   useSharedValue, 
@@ -9,6 +9,7 @@ import Animated, {
   withSequence, 
   runOnJS 
 } from 'react-native-reanimated';
+import styled from 'styled-components/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { GameContext } from '../context/GameContext';
 
@@ -21,7 +22,6 @@ export default function GameScreen() {
   const scale = useSharedValue(1);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
-
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
       { translateX: translateX.value },
@@ -41,7 +41,6 @@ export default function GameScreen() {
   });
 
   const taps = Gesture.Exclusive(doubleTap, singleTap);
-
   const longPress = Gesture.LongPress().minDuration(3000)
     .onStart(() => { scale.value = withSpring(1.1); })
     .onEnd(() => {
@@ -60,7 +59,6 @@ export default function GameScreen() {
   });
 
   const swipes = Gesture.Exclusive(swipeRight, swipeLeft);
-
   const pan = Gesture.Pan().minDistance(20)
     .onChange((e) => {
       translateX.value = e.translationX;
@@ -80,148 +78,127 @@ export default function GameScreen() {
     });
 
   const combinedGestures = Gesture.Simultaneous(Gesture.Race(taps, longPress, swipes), pan, pinch);
-
   return (
-    <View style={[styles.container, isDarkMode && styles.containerDark]}>
-      
-      <View style={[styles.scoreCard, isDarkMode && styles.cardDark]}>
-        <Text style={[styles.scoreLabel, isDarkMode && styles.textDarkHint]}>SCORE</Text>
-        <Text style={styles.scoreValue}>{score}</Text>
-      </View>
-
-      <View style={styles.clickerContainer}>
+    <Container isDarkMode={isDarkMode}>
+      <ScoreCard isDarkMode={isDarkMode}>
+        <ScoreLabel isDarkMode={isDarkMode}>SCORE</ScoreLabel>
+        <ScoreValue>{score}</ScoreValue>
+      </ScoreCard>
+      <ClickerContainer>
         <GestureDetector gesture={combinedGestures}>
-          <Animated.View style={[styles.clicker, isDarkMode && styles.clickerDark, animatedStyle]}>
+          <Clicker isDarkMode={isDarkMode} style={animatedStyle}>
             <MaterialCommunityIcons name="gesture-tap-button" size={36} color="white" />
-            <Text style={styles.clickerText}>TAP ME</Text>
-          </Animated.View>
+            <ClickerText>TAP ME</ClickerText>
+          </Clicker>
         </GestureDetector>
-      </View>
-
-      <View style={[styles.legendCard, isDarkMode && styles.cardDark]}>
+      </ClickerContainer>
+      <LegendCard isDarkMode={isDarkMode}>
         <LegendItem icon="gesture-tap" color="#29B6F6" text="Tap: +1 point" isDarkMode={isDarkMode} />
         <LegendItem icon="gesture-double-tap" color="#FFA726" text="Double-tap: +2 points" isDarkMode={isDarkMode} />
         <LegendItem icon="timer-sand" color="#AB47BC" text="Long-press (3s): +5 points" isDarkMode={isDarkMode} />
         <LegendItem icon="arrow-left-right" color="#EF5350" text="Swipe: +1-10 random points" isDarkMode={isDarkMode} />
         <LegendItem icon="resize" color="#66BB6A" text="Pinch: +3 points" isDarkMode={isDarkMode} />
-      </View>
-
-    </View>
+      </LegendCard>
+    </Container>
   );
 }
 
 const LegendItem = ({ icon, color, text, isDarkMode }) => (
-  <View style={styles.legendItem}>
-    <View style={[styles.iconBox, { backgroundColor: `${color}15` }]}>
+  <LegendItemContainer>
+    <IconBox color={color}>
       <MaterialCommunityIcons name={icon} size={20} color={color} />
-    </View>
-    <Text style={[styles.legendText, isDarkMode && styles.textDark]}>{text}</Text>
-  </View>
+    </IconBox>
+    <LegendText isDarkMode={isDarkMode}>{text}</LegendText>
+  </LegendItemContainer>
 );
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F7FA',
-    alignItems: 'center',
-    paddingTop: 40,
-    paddingBottom: 20,
-  },
-  containerDark: {
-    backgroundColor: '#121212',
-  },
-  scoreCard: {
-    backgroundColor: 'white',
-    width: 200,
-    paddingVertical: 20,
-    borderRadius: 16,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
-  },
-  cardDark: {
-    backgroundColor: '#1E1E1E',
-  },
-  scoreLabel: {
-    color: '#888',
-    fontSize: 12,
-    fontWeight: '600',
-    letterSpacing: 1.5,
-    marginBottom: 5,
-  },
-  textDarkHint: {
-    color: '#AAAAAA',
-  },
-  scoreValue: {
-    color: '#29B6F6',
-    fontSize: 48,
-    fontWeight: 'bold',
-  },
-  clickerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-  },
-  clicker: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    backgroundColor: '#00A8FF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 6,
-    borderColor: '#E1F5FE',
-    shadowColor: '#00A8FF',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.4,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  clickerDark: {
-    borderColor: '#00334d',
-    shadowColor: '#005b82',
-  },
-  clickerText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginTop: 8,
-    letterSpacing: 1,
-  },
-  legendCard: {
-    backgroundColor: 'white',
-    width: '90%',
-    padding: 20,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  iconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  legendText: {
-    color: '#555',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  textDark: {
-    color: '#FFFFFF',
-  }
-});
+const Container = styled.View`
+  flex: 1;
+  background-color: ${(props) => (props.isDarkMode ? '#121212' : '#F5F7FA')};
+  align-items: center;
+  padding-top: 40px;
+  padding-bottom: 20px;
+`;
+
+const ScoreCard = styled.View`
+  background-color: ${(props) => (props.isDarkMode ? '#1E1E1E' : '#FFFFFF')};
+  width: 200px;
+  padding-vertical: 20px;
+  border-radius: 16px;
+  align-items: center;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05);
+  elevation: 3;
+`;
+
+const ScoreLabel = styled.Text`
+  color: ${(props) => (props.isDarkMode ? '#AAAAAA' : '#888888')};
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  margin-bottom: 5px;
+`;
+
+const ScoreValue = styled.Text`
+  color: #29B6F6;
+  font-size: 48px;
+  font-weight: bold;
+`;
+
+const ClickerContainer = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+`;
+
+const Clicker = styled(Animated.View)`
+  width: 160px;
+  height: 160px;
+  border-radius: 80px;
+  background-color: #00A8FF;
+  justify-content: center;
+  align-items: center;
+  border-width: 6px;
+  border-color: ${(props) => (props.isDarkMode ? '#00334d' : '#E1F5FE')};
+  box-shadow: 0px 10px 20px ${(props) => (props.isDarkMode ? 'rgba(0, 91, 130, 0.6)' : 'rgba(0, 168, 255, 0.4)')};
+  elevation: 10;
+`;
+
+const ClickerText = styled.Text`
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  margin-top: 8px;
+  letter-spacing: 1px;
+`;
+
+const LegendCard = styled.View`
+  background-color: ${(props) => (props.isDarkMode ? '#1E1E1E' : '#FFFFFF')};
+  width: 90%;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05);
+  elevation: 3;
+`;
+
+const LegendItemContainer = styled.View`
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 12px;
+`;
+
+const IconBox = styled.View`
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  justify-content: center;
+  align-items: center;
+  margin-right: 12px;
+  background-color: ${(props) => `${props.color}15`};
+`;
+
+const LegendText = styled.Text`
+  color: ${(props) => (props.isDarkMode ? '#FFFFFF' : '#555555')};
+  font-size: 14px;
+  font-weight: 500;
+`;
