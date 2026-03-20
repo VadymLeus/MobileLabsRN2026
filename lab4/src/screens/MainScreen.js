@@ -32,7 +32,6 @@ export default function MainScreen() {
       loadStorageStats();
     }
   }, [currentPath]);
-
   const loadDirectory = async () => {
     try {
       if (!currentPath) return;
@@ -140,7 +139,6 @@ export default function MainScreen() {
       Alert.alert("Помилка", "Не вдалося перейменувати об'єкт.");
     }
   };
-
   const startMoving = (item) => setMovingItem(item);
   const cancelMoving = () => setMovingItem(null);
   const performMove = async () => {
@@ -258,6 +256,7 @@ export default function MainScreen() {
       <InfoModal 
         visible={isInfoModalVisible}
         file={selectedFile}
+        rootDir={ROOT_DIR}
         onClose={() => setInfoModalVisible(false)}
       />
     </View>
