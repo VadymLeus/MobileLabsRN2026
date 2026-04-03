@@ -14,6 +14,7 @@ export default function ProductDetails() {
       router.replace('/(app)');
     }
   };
+
   const CustomBackButton = () => (
     <TouchableOpacity onPress={handleBack} style={styles.headerButton}>
       <MaterialCommunityIcons name="arrow-left" size={28} color="#007AFF" />
@@ -35,6 +36,7 @@ export default function ProductDetails() {
       </View>
     );
   }
+
   return (
     <ScrollView style={styles.container}>
       <Stack.Screen options={{ 
@@ -59,6 +61,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   headerButton: {
+    marginLeft: 15,
     marginRight: 10,
     justifyContent: 'center',
     alignItems: 'center',
