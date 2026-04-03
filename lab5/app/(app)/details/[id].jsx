@@ -1,22 +1,47 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, ScrollView } from 'react-native';
-import { useLocalSearchParams, Stack } from 'expo-router';
+import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import { useLocalSearchParams, Stack, router } from 'expo-router';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { products } from '../../../data/products';
 
 export default function ProductDetails() {
   const { id } = useLocalSearchParams();
   const product = products.find((p) => p.id === id);
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(app)');
+    }
+  };
+  const CustomBackButton = () => (
+    <TouchableOpacity onPress={handleBack} style={styles.headerButton}>
+      <MaterialCommunityIcons name="arrow-left" size={28} color="#007AFF" />
+    </TouchableOpacity>
+  );
   if (!product) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.error}>Товар не знайдено</Text>
+      <View style={styles.errorContainer}>
+        <Stack.Screen options={{ 
+          title: 'Помилка',
+          headerLeft: () => <CustomBackButton />,
+          headerTitleAlign: 'left'
+        }} />
+        <Text style={styles.errorEmoji}>😕</Text>
+        <Text style={styles.errorText}>На жаль, такого товару не існує.</Text>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.replace('/(app)')}>
+          <Text style={styles.backButtonText}>Повернутися до каталогу</Text>
+        </TouchableOpacity>
       </View>
     );
   }
-
   return (
     <ScrollView style={styles.container}>
-      <Stack.Screen options={{ title: 'Деталі' }} />
+      <Stack.Screen options={{ 
+        title: product.name,
+        headerLeft: () => <CustomBackButton />,
+        headerTitleAlign: 'left'
+      }} />
       <Image source={{ uri: product.image }} style={styles.image} />
       <View style={styles.details}>
         <Text style={styles.name}>{product.name}</Text>
@@ -33,10 +58,44 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+  headerButton: {
+    marginRight: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: Platform.OS === 'web' ? 2 : 0, 
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+    padding: 20,
+  },
+  errorEmoji: {
+    fontSize: 60,
+    marginBottom: 15,
+  },
+  errorText: {
+    fontSize: 18,
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 25,
+  },
+  backButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    borderRadius: 8,
+  },
+  backButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   image: {
     width: '100%',
     height: 300,
-    resizeMode: 'contain',
+    resizeMode: 'cover',
     backgroundColor: '#f9f9f9',
   },
   details: {
@@ -64,11 +123,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     color: '#555',
-  },
-  error: {
-    fontSize: 18,
-    textAlign: 'center',
-    marginTop: 50,
-    color: '#FF3B30',
   },
 });

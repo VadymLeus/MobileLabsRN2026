@@ -1,11 +1,29 @@
 import React from 'react';
-import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, Platform, Alert } from 'react-native';
 import { Link, Stack } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
 import { products } from '../../data/products';
 
 export default function Catalog() {
   const { logout } = useAuth();
+  const handleLogout = () => {
+    if (Platform.OS === 'web') {
+      const confirmLogout = window.confirm("Ви впевнені, що хочете вийти?");
+      if (confirmLogout) {
+        logout();
+      }
+    } else {
+      Alert.alert(
+        "Підтвердження",
+        "Ви впевнені, що хочете вийти з акаунту?",
+        [
+          { text: "Скасувати", style: "cancel" },
+          { text: "Вийти", onPress: logout, style: "destructive" }
+        ]
+      );
+    }
+  };
+
   const renderItem = ({ item }) => (
     <Link href={`/details/${item.id}`} asChild>
       <TouchableOpacity style={styles.card}>
@@ -17,7 +35,6 @@ export default function Catalog() {
       </TouchableOpacity>
     </Link>
   );
-
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ title: 'Каталог товарів' }} />
@@ -27,7 +44,7 @@ export default function Catalog() {
         renderItem={renderItem}
         contentContainerStyle={styles.list}
       />
-      <TouchableOpacity style={styles.logoutButton} onPress={logout}>
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Вийти</Text>
       </TouchableOpacity>
     </View>
@@ -58,6 +75,7 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 8,
     marginRight: 15,
+    backgroundColor: '#f0f0f0',
   },
   info: {
     flex: 1,
@@ -77,7 +95,9 @@ const styles = StyleSheet.create({
   logoutButton: {
     backgroundColor: '#FF3B30',
     padding: 15,
-    margin: 15,
+    marginHorizontal: 15,
+    marginTop: 5,
+    marginBottom: Platform.OS === 'android' ? 40 : 20, 
     borderRadius: 12,
     alignItems: 'center',
   },
