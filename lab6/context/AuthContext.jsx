@@ -9,6 +9,7 @@ import {
 import { auth } from '../firebaseConfig';
 
 const AuthContext = createContext();
+
 export function useAuth() {
   return useContext(AuthContext);
 }
@@ -16,11 +17,13 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       setIsLoading(false);
     });
+
     return unsubscribe;
   }, []);
 
