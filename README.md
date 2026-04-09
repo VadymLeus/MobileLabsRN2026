@@ -8,3 +8,4 @@
 3. [Lab 3 - Кастомні жести та стилізація](lab3/)
 4. [Lab 4 - Робота з файловою системою](lab4/)
 5. [Lab 5 - Побудова навігації у React Native](lab5/)
+6. [Lab 6 - Firebase Authentication та Firestore](lab6/)
